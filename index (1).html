@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$YEAST</title>
+<meta name="description" content="One cell in the dish for every wallet holding $YEAST. It only rises.">
+<meta property="og:title" content="$YEAST">
+<meta property="og:description" content="One cell in the dish for every wallet holding $YEAST.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --yolk:#FDCD03;
+    --crust:#1F1405;
+    --crust-2:#6B4A18;
+    --cream:#FFF6E0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--yolk); color:var(--crust);
+    font-family:"Bricolage Grotesque",system-ui,sans-serif;
+    font-size:18px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{width:min(1160px,calc(100% - 48px)); margin:0 auto}
+
+  nav{display:flex; align-items:center; justify-content:space-between; padding:28px 0 0}
+  .mark{font-weight:800; font-size:24px; letter-spacing:-0.02em; text-decoration:none; font-variation-settings:"wdth" 85}
+  nav div{display:flex; gap:28px}
+  nav div a{text-decoration:none; font-size:17px}
+  nav div a:hover{text-decoration:underline; text-underline-offset:5px}
+
+  .hero{
+    display:grid; grid-template-columns:5fr 6fr; gap:48px; align-items:center;
+    min-height:calc(100vh - 84px); padding:40px 0 48px;
+  }
+  h1{
+    margin:0 0 18px; font-weight:800; line-height:0.9; letter-spacing:-0.035em;
+    font-size:clamp(64px,8.4vw,128px); font-variation-settings:"wdth" 78;
+  }
+  .lede{max-width:32ch; margin:0 0 34px; font-size:20px}
+  .stats{display:flex; gap:40px; margin:0 0 34px}
+  .stat b{
+    display:block; font-weight:800; font-size:clamp(44px,5vw,68px); line-height:1;
+    letter-spacing:-0.03em; font-variation-settings:"wdth" 82; font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .stat span{display:block; margin-top:6px; color:var(--crust-2)}
+  .cta{display:flex; align-items:center; gap:22px; flex-wrap:wrap}
+  .btn{
+    display:inline-block; font:inherit; font-weight:800; font-size:19px;
+    background:var(--crust); color:var(--yolk); text-decoration:none;
+    padding:16px 28px; border:0; border-radius:6px; cursor:pointer;
+  }
+  .btn:hover{background:#000}
+  .link{text-decoration:underline; text-underline-offset:5px; text-decoration-thickness:1.5px}
+  .btn:focus-visible,.link:focus-visible,input:focus-visible,nav a:focus-visible{outline:3px solid var(--crust); outline-offset:3px}
+
+  .dish{position:relative; width:100%; max-width:640px; aspect-ratio:1; margin-left:auto}
+  canvas{width:100%; height:100%; display:block}
+  .toast{
+    position:absolute; left:50%; bottom:7%; transform:translateX(-50%);
+    background:var(--crust); color:var(--yolk); font-weight:800; font-size:18px;
+    padding:10px 16px; border-radius:6px; opacity:0; pointer-events:none;
+    white-space:nowrap; transition:opacity .25s ease;
+  }
+  .toast.on{opacity:1}
+
+  .band{background:var(--crust); color:var(--cream); overflow:hidden; padding:15px 0; font-size:17px}
+  .track{display:flex; gap:64px; width:max-content; animation:slide 36s linear infinite}
+  .track span{white-space:nowrap}
+  .track i{display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--cream); margin-right:12px; vertical-align:-1px}
+  @keyframes slide{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+
+  .below{display:grid; grid-template-columns:1fr 1fr; gap:64px; padding:80px 0 72px}
+  h2{
+    margin:0 0 18px; font-weight:800; font-size:clamp(32px,3.6vw,44px); line-height:1;
+    letter-spacing:-0.03em; font-variation-settings:"wdth" 80;
+  }
+  .find{display:flex; gap:12px; max-width:520px}
+  .find input{
+    flex:1; min-width:0; font:inherit; font-size:18px; padding:14px 16px;
+    border:2px solid var(--crust); border-radius:6px; background:var(--cream); color:var(--crust);
+  }
+  .find input::placeholder{color:var(--crust-2)}
+  .note{margin:12px 0 0; color:var(--crust-2); min-height:24px}
+  .how p{margin:0 0 14px; max-width:46ch}
+  .how p:last-child{margin:0}
+
+  footer{
+    border-top:2px solid var(--crust); padding:22px 0 44px; font-size:15px; color:var(--crust-2);
+    display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; align-items:baseline;
+  }
+  footer div{display:flex; gap:22px}
+  footer a{text-decoration:none; color:var(--crust)}
+  footer a:hover{text-decoration:underline; text-underline-offset:4px}
+  #ca{display:none; width:100%; color:var(--crust); word-break:break-all; margin-top:10px}
+
+  @media (prefers-reduced-motion:reduce){ .track{animation:none} .toast{transition:none} }
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr; gap:24px; min-height:0; padding-top:24px}
+    .dish{margin:0 auto; order:-1; max-width:460px}
+    .below{grid-template-columns:1fr; gap:48px; padding:64px 0 56px}
+  }
+  @media (max-width:520px){ body{font-size:17px} .stats{gap:28px} nav div{gap:18px} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a class="mark" href="#">$YEAST</a>
+    <div>
+      <a id="navTg" href="#" target="_blank" rel="noopener">Telegram</a>
+      <a id="navX" href="#" target="_blank" rel="noopener">X</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div>
+      <h1>It only<br>rises.</h1>
+      <p class="lede">One cell in the dish for every wallet holding $YEAST. Buy in and the culture buds.</p>
+      <div class="stats">
+        <div class="stat"><b id="holders">1</b><span id="holdersLabel">cell in the dish</span></div>
+        <div class="stat"><b id="last">now</b><span id="lastLabel">since the last bud</span></div>
+      </div>
+      <div class="cta">
+        <a class="btn" id="buy" href="#" target="_blank" rel="noopener">Feed the yeast</a>
+        <a class="link" href="#find">Find your cell</a>
+      </div>
+    </div>
+    <div class="dish">
+      <canvas id="dish" width="1200" height="1200" aria-label="The $YEAST colony. One cell per holder."></canvas>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<div class="band" aria-hidden="true"><div class="track" id="track"></div></div>
+
+<div class="wrap">
+  <div class="below">
+    <div id="find">
+      <h2>Find your cell</h2>
+      <form class="find" id="findForm">
+        <input id="findInput" placeholder="Paste your wallet address" autocomplete="off" spellcheck="false" aria-label="Wallet address">
+        <button class="btn" type="submit">Find</button>
+      </form>
+      <p class="note" id="note"></p>
+    </div>
+    <div class="how">
+      <h2>How it works</h2>
+      <p>The dish reads the Solana chain about once a minute. Every wallet holding $YEAST gets one cell, placed by its address, so yours always lands in the same spot. Sell to zero and the cell dies.</p>
+      <p>$YEAST is a standard Pump.fun launch. Everyone buys on the same curve from the same second. There's no presale and no team wallet. Yeast has been making bread and beer for six thousand years without asking for credit, and none of this is financial advice.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>$YEAST on Solana</span>
+    <div>
+      <a id="footTg" href="#" target="_blank" rel="noopener">Telegram</a>
+      <a id="footX" href="#" target="_blank" rel="noopener">X</a>
+      <a id="footBuy" href="#" target="_blank" rel="noopener">Pump.fun</a>
+    </div>
+    <span id="ca"></span>
+  </footer>
+</div>
+
+<script>
+/* ---------- fill in on launch day ---------- */
+const CONFIG = {
+  MINT: "",                                 // token mint from Pump.fun. Empty = pre-launch.
+  HELIUS_KEY: "",                           // free key from helius.dev, domain-restricted
+  BUY_URL: "",                              // https://pump.fun/coin/<MINT>
+  TELEGRAM_URL: "",                         // https://t.me/yourgroup
+  X_URL: "https://x.com/YEASTCOINS",
+  LAUNCH_LABEL: "Sept 29",
+  LAUNCH_SUB: "launch day, 7 PM ET",
+  POLL_SECONDS: 45,
+  MIN_BALANCE: 1,
+  DECIMALS: 6
+};
+/* ------------------------------------------- */
+
+const cv = document.getElementById("dish"), ctx = cv.getContext("2d");
+const W = 1200, C = W / 2, R = W / 2 - 40;
+const $ = id => document.getElementById(id);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let cells = [], byId = new Map(), t = 0, lastBudAt = Date.now(), recent = [], live = false;
+const hit = new Set();
+const MILESTONES = [[100, "100 cells. It's a culture."], [500, "500. Getting crowded."], [1000, "1,000. The crust has formed."], [5000, "5,000. Second dish incoming."]];
+
+const logo = new Image(); let logoReady = false;
+logo.onload = () => logoReady = true; logo.src = "logo.png";
+let SEED_R = 84;
+const LOGO_CELL_R = 305, LOGO_CX = 558, LOGO_CY = 739;
+
+function hash(s){ let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed){ let a = seed || 1; return () => { a ^= a << 13; a ^= a >>> 17; a ^= a << 5; return ((a >>> 0) % 100000) / 100000; }; }
+function short(a){ return a.length > 12 ? a.slice(0, 4) + "…" + a.slice(-4) : a; }
+
+function placeCell(id){
+  if (byId.has(id)) return byId.get(id);
+  const rand = rng(hash(id));
+  let p = null;
+  if (cells.length === 0){
+    p = { id, x: C, y: C, r: SEED_R, age: 0, ang: -0.8, hi: 0, seed: true };
+  } else {
+    for (let tries = 0; tries < 50 && !p; tries++){
+      const parent = cells[Math.floor(rand() * cells.length)];
+      const a = rand() * Math.PI * 2, r = 24 + rand() * 18;
+      const d = parent.r + r + 3 + rand() * 10;
+      const x = parent.x + Math.cos(a) * d, y = parent.y + Math.sin(a) * d;
+      if (Math.hypot(x - C, y - C) > R - r - 8) continue;
+      if (cells.some(c => Math.hypot(c.x - x, c.y - y) < c.r + r - 2)) continue;
+      p = { id, x, y, r, age: 0, ang: a, hi: 0 };
+    }
+    for (let tries = 0; tries < 300 && !p; tries++){
+      const a = rand() * Math.PI * 2, d = rand() * (R - 34), r = 14 + rand() * 8;
+      const x = C + Math.cos(a) * d, y = C + Math.sin(a) * d;
+      if (cells.some(c => Math.hypot(c.x - x, c.y - y) < c.r + r - 6)) continue;
+      p = { id, x, y, r, age: 0, ang: a, hi: 0 };
+    }
+    if (!p){ const a = rand() * Math.PI * 2, d = rand() * (R - 34); p = { id, x: C + Math.cos(a) * d, y: C + Math.sin(a) * d, r: 12, age: 0, ang: a, hi: 0 }; }
+  }
+  cells.push(p); byId.set(id, p);
+  return p;
+}
+
+function setHolders(list){
+  const set = new Set(list), before = cells.length;
+  for (const c of cells) if (!set.has(c.id)) byId.delete(c.id);
+  cells = cells.filter(c => set.has(c.id));
+  const added = [];
+  for (const id of list) if (!byId.has(id)) added.push(placeCell(id));
+  const n = cells.length;
+  $("holders").textContent = n.toLocaleString();
+  $("holdersLabel").textContent = n === 1 ? "cell in the dish" : "cells in the dish";
+  if (added.length && before > 0){
+    lastBudAt = Date.now();
+    for (const c of added) recent.unshift(c.id);
+    recent = recent.slice(0, 24);
+    renderTrack();
+  }
+  for (const [m, msg] of MILESTONES) if (n >= m && !hit.has(m)){ hit.add(m); flash(msg); }
+}
+
+function renderTrack(){
+  let items;
+  if (live || recent.length) items = (recent.length ? recent : ["seed"]).map(id => (id === "seed" ? "seed cell" : short(id)) + " just budded");
+  else items = ["Launches Tuesday " + CONFIG.LAUNCH_LABEL + ", 7 PM ET", "Standard Pump.fun launch", "Contract address gets pinned in Telegram first"];
+  const html = items.map(s => `<span><i></i>${s}</span>`).join("");
+  $("track").innerHTML = html + html + html;
+}
+
+function flash(msg){ const el = $("toast"); el.textContent = msg; el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 3000); }
+
+function ago(){
+  const s = Math.floor((Date.now() - lastBudAt) / 1000);
+  if (s < 5) return "now";
+  if (s < 60) return s + "s";
+  if (s < 3600) return Math.floor(s / 60) + "m";
+  if (s < 86400) return Math.floor(s / 3600) + "h";
+  return Math.floor(s / 86400) + "d";
+}
+setInterval(() => { if (live) $("last").textContent = ago(); }, 1000);
+
+function drawSeed(c){
+  if (logoReady){
+    const s = c.r / LOGO_CELL_R, size = logo.width * s;
+    const kx = c.x + 0.46 * c.r, ky = c.y - 0.48 * c.r, kr = c.r * 1.72;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(kx, ky, kr, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(logo, c.x - LOGO_CX * s, c.y - LOGO_CY * s, size, size);
+    const f = ctx.createRadialGradient(kx, ky, kr * 0.78, kx, ky, kr);
+    f.addColorStop(0, "rgba(253,205,3,0)"); f.addColorStop(1, "rgba(253,205,3,1)");
+    ctx.fillStyle = f; ctx.fillRect(kx - kr, ky - kr, kr * 2, kr * 2);
+    ctx.restore();
+  } else {
+    blob(c.x, c.y, c.r, false);
+  }
+}
+
+function blob(x, y, r, bright){
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  if (bright){ g.addColorStop(0, "#FFFFFF"); g.addColorStop(1, "#F6ECD6"); }
+  else { g.addColorStop(0, "#FFF6E0"); g.addColorStop(0.55, "#F3E2B8"); g.addColorStop(1, "#E4CB97"); }
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawCell(c){
+  if (c.seed){ drawSeed(c); if (c.hi > 0){ ring(c.x, c.y, c.r * 1.25); c.hi--; } return; }
+  const g = reduceMotion ? 1 : Math.min(1, c.age / 26);
+  const rr = c.r * (0.25 + 0.75 * g);
+  const wob = reduceMotion ? 0 : Math.sin((t + c.x * 0.7) * 0.035) * 1.4;
+  const x = c.x + wob, y = c.y;
+  blob(x, y, rr, c.hi > 0);
+  if (g > 0.65){
+    const b = rr * 0.44 * Math.min(1, (g - 0.65) / 0.35);
+    blob(x + Math.cos(c.ang) * (rr + b * 0.55), y + Math.sin(c.ang) * (rr + b * 0.55), b, c.hi > 0);
+  }
+  if (c.hi > 0){ ring(x, y, rr + 12 + Math.sin(t * 0.15) * 3); c.hi--; }
+}
+
+function ring(x, y, r){ ctx.strokeStyle = "#1F1405"; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke(); }
+
+function draw(){
+  ctx.clearRect(0, 0, W, W);
+  ctx.strokeStyle = "#E3B000"; ctx.lineWidth = cells.length >= 1000 ? 26 : 12;
+  ctx.beginPath(); ctx.arc(C, C, R, 0, Math.PI * 2); ctx.stroke();
+  for (const c of cells){ c.age++; drawCell(c); }
+  t++;
+  if (!reduceMotion) requestAnimationFrame(draw);
+}
+
+/* find your cell */
+$("findForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("findInput").value.trim();
+  if (!v){ $("note").textContent = "Paste a wallet address first."; return; }
+  const c = byId.get(v);
+  if (!c){ $("note").textContent = live ? "No cell for that wallet yet." : "Nothing to find until launch day."; return; }
+  c.hi = 240;
+  $("note").textContent = "Found it. Look for the dark ring in the dish.";
+  document.querySelector(".dish").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+});
+$("findInput").addEventListener("input", () => $("note").textContent = "");
+
+/* on-chain: Helius DAS getTokenAccounts */
+async function fetchHolders(){
+  const url = "https://mainnet.helius-rpc.com/?api-key=" + CONFIG.HELIUS_KEY;
+  const owners = new Set(); let cursor;
+  const min = CONFIG.MIN_BALANCE * Math.pow(10, CONFIG.DECIMALS);
+  for (let page = 0; page < 60; page++){
+    const body = { jsonrpc: "2.0", id: "yeast", method: "getTokenAccounts", params: { mint: CONFIG.MINT, limit: 1000, ...(cursor ? { cursor } : {}) } };
+    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const json = await res.json();
+    if (!json.result || !json.result.token_accounts) throw new Error(json.error?.message || "bad response");
+    for (const a of json.result.token_accounts) if (Number(a.amount) >= min) owners.add(a.owner);
+    cursor = json.result.cursor;
+    if (!cursor || json.result.token_accounts.length < 1000) break;
+  }
+  return [...owners].sort((a, b) => hash(a) - hash(b));
+}
+async function liveLoop(){
+  try { setHolders(await fetchHolders()); } catch (err){ console.error(err); }
+  setTimeout(liveLoop, CONFIG.POLL_SECONDS * 1000);
+}
+
+/* simulation, only with ?demo in the URL */
+function demoLoop(){
+  const list = cells.map(c => c.id);
+  const b58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"; let w = "";
+  for (let i = 0; i < 44; i++) w += b58[Math.floor(Math.random() * b58.length)];
+  list.push(w);
+  setHolders(list);
+  if (cells.length < 320) setTimeout(demoLoop, 400 + Math.random() * 1400);
+}
+
+function setLink(id, url){ const el = $(id); if (url) el.href = url; else el.addEventListener("click", e => e.preventDefault()); }
+
+function boot(){
+  setLink("navTg", CONFIG.TELEGRAM_URL); setLink("footTg", CONFIG.TELEGRAM_URL);
+  setLink("navX", CONFIG.X_URL); setLink("footX", CONFIG.X_URL);
+  setLink("buy", CONFIG.MINT ? CONFIG.BUY_URL : CONFIG.TELEGRAM_URL);
+  if (CONFIG.BUY_URL) $("footBuy").href = CONFIG.BUY_URL; else $("footBuy").style.display = "none";
+  const demo = new URLSearchParams(location.search).has("demo");
+  if (CONFIG.MINT){
+    live = true;
+    $("ca").style.display = "block"; $("ca").textContent = "Contract: " + CONFIG.MINT;
+    setHolders(["seed"]); renderTrack(); liveLoop();
+  } else if (demo){
+    live = true;
+    setHolders(["seed"]); renderTrack(); setTimeout(demoLoop, 1200);
+  } else {
+    SEED_R = 120;
+    setHolders(["seed"]); renderTrack();
+    $("holdersLabel").textContent = "cell so far. Yours next.";
+    $("last").textContent = CONFIG.LAUNCH_LABEL;
+    $("lastLabel").textContent = CONFIG.LAUNCH_SUB;
+    $("buy").textContent = "Join the Telegram";
+  }
+  draw();
+}
+boot();
+</script>
+</body>
+</html>
